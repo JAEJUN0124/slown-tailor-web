@@ -31,3 +31,13 @@ npm run dev
 | `pricing.ts` | 가격 탭·그룹·항목(정가/판매가, 배지, 설명), 견적함 문구 |
 
 사진·영상은 플레이스홀더입니다. 실제 영상은 `public/videos/hero.mp4`에 두고 `home.ts`의 `HERO.videoSrc`를 `"/videos/hero.mp4"`로 바꾸면 됩니다. 예약 링크는 `site.ts`의 `bookingUrl`(현재 `#booking`)을 바꾸면 모든 버튼에 반영됩니다.
+
+## 배포 (GitHub Pages)
+
+`main`에 푸시하면 `.github/workflows/deploy.yml`이 정적 사이트(`out/`)를 빌드해 GitHub Pages에 배포합니다. 저장소 이름이 경로가 되므로(`/<repo>/`) 워크플로가 `PAGES_BASE_PATH`를 넘겨 줍니다. 저장소의 **Settings → Pages → Source**는 `GitHub Actions`로 두면 됩니다.
+
+로컬에서 같은 결과를 확인하려면:
+
+```bash
+PAGES_BASE_PATH=/slown-tailor-web npm run build
+```

@@ -22,7 +22,10 @@ export function Footer() {
               <p>{SITE.company}</p>
               <p>{SITE.ceo}</p>
             </div>
-            <p className="text-[11px] text-mocha/70">{SITE.copyright}</p>
+            <div className="space-y-1">
+              <p className="text-[11px] text-mocha/70">{SITE.copyright}</p>
+              <p className="text-[11px] text-mocha/70">{SITE.demoDisclaimer}</p>
+            </div>
           </div>
 
           <div>

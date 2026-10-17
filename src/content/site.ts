@@ -8,6 +8,8 @@ export const SITE = {
   company: "상호명 슬로운 테일러",
   ceo: "대표자 이현승",
   copyright: "© 2026 SLOWN. All rights reserved.",
+  demoNotice: "데모 사이트 · 샘플 콘텐츠",
+  demoDisclaimer: "이 사이트는 데모입니다. 후기·수치·인물·가격은 실제와 무관한 샘플입니다.",
   bookingUrl: "#booking",
   contact: {
     phone: "02-0000-0000",

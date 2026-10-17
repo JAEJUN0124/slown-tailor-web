@@ -83,7 +83,7 @@ export function Hero() {
           loop
           playsInline
           className="absolute inset-0 h-full w-full object-cover"
-          src={HERO.videoSrc}
+          src={HERO.videoSrc.startsWith("/") ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${HERO.videoSrc}` : HERO.videoSrc}
           style={{ filter: "brightness(0.7) saturate(0.8) sepia(0.15)" }}
         />
       ) : (
