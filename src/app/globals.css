@@ -1,0 +1,175 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* The pre-redesign copy lives in _backup; keep its classes out of the build. */
+@source not "../../_backup";
+
+/* ── Brand palette ─────────────────────────────────────────────────────
+   Coffee brown #71502F and amber #F3A257 lead; the rest are tints/shades
+   derived from them so blends between sections stay in one family. */
+:root {
+  --espresso: #2b1e14; /* deepest brown: body text, darkest sections */
+  --coffee: #71502f; /* brand primary */
+  --amber: #f3a257; /* brand accent */
+  --amber-deep: #c9772f; /* amber for strokes/accents on light paper */
+  --honey: #f8c995; /* amber tint for small text on dark brown */
+  --latte: #eee3d5; /* secondary light paper */
+  --cream: #f8f3ec; /* main light paper */
+  --mocha: #7a6553; /* muted text on light paper (4.8:1 on cream) */
+  --line: #e2d5c4; /* hairlines on light paper */
+}
+
+@theme inline {
+  --color-espresso: var(--espresso);
+  --color-coffee: var(--coffee);
+  --color-amber: var(--amber);
+  --color-amber-deep: var(--amber-deep);
+  --color-honey: var(--honey);
+  --color-latte: var(--latte);
+  --color-cream: var(--cream);
+  --color-mocha: var(--mocha);
+  --color-line: var(--line);
+
+  --font-sans: Pretendard, system-ui, sans-serif;
+
+  --radius-pill: 9999px;
+
+  --spacing-section-y: clamp(4.5rem, 9vw, 9.5rem);
+  --spacing-section-py-sm: clamp(4rem, 10vw, 6rem);
+  --spacing-section-py: clamp(6rem, 14vw, 10rem);
+  --spacing-section-py-lg: clamp(7.5rem, 18vw, 12.5rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+
+  --animate-pulse-amber: pulse-amber 1.8s ease-in-out infinite;
+  --animate-hero-pan: hero-pan 24s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-amber {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+/* Slow drift for the placeholder hero backdrop (stands in for the video). */
+@keyframes hero-pan {
+  0% {
+    transform: scale(1.08) translate3d(-2%, -1%, 0);
+  }
+  100% {
+    transform: scale(1.16) translate3d(2%, 1.5%, 0);
+  }
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────── */
+@utility container {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+
+  @media (width >= 640px) {
+    padding-inline: 2rem;
+  }
+  @media (width >= 1024px) {
+    padding-inline: 3rem;
+  }
+  @media (width >= 1280px) {
+    padding-inline: 5rem;
+  }
+}
+
+/* ── Type scale ──────────────────────────────────────────────────────── */
+@utility text-display {
+  letter-spacing: -0.03em;
+  font-size: clamp(2.75rem, 9vw, 7.5rem);
+  font-weight: 900;
+  line-height: 0.98;
+}
+@utility text-h1 {
+  letter-spacing: -0.025em;
+  font-size: clamp(1.875rem, 5vw, 3.75rem);
+  font-weight: 800;
+  line-height: 1.05;
+}
+@utility text-h2 {
+  letter-spacing: -0.015em;
+  font-size: clamp(1.375rem, 3vw, 2.125rem);
+  font-weight: 400;
+  line-height: 1.18;
+}
+@utility text-h3 {
+  letter-spacing: -0.01em;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+@utility text-lead {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 300;
+  line-height: 1.6;
+}
+@utility text-body {
+  font-size: 0.9375rem;
+  font-weight: 300;
+  line-height: 1.65;
+}
+@utility text-caption {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+@utility text-label {
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── Base ────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--cream);
+    color: var(--espresso);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    word-break: keep-all;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--amber) 40%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--amber-deep);
+    outline-offset: 3px;
+  }
+}
