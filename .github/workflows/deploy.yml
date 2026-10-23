@@ -14,6 +14,7 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# One Pages site, two apps: landing/ at the site root, brand-shop/ under /shop/.
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,19 +25,38 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: |
+            landing/package-lock.json
+            brand-shop/package-lock.json
 
       - id: pages
         uses: actions/configure-pages@v6
 
-      - run: npm ci
-
-      - run: npm run build
+      - name: Build landing
+        working-directory: landing
+        run: |
+          npm ci
+          npm run build
         env:
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
+      - name: Build brand shop
+        working-directory: brand-shop
+        run: |
+          npm ci
+          npm run build
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}/shop
+
+      - name: Combine both sites
+        run: |
+          mkdir -p site/shop
+          cp -R landing/out/. site/
+          cp -R brand-shop/out/. site/shop/
+
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: ./out
+          path: ./site
 
   deploy:
     needs: build

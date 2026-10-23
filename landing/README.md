@@ -1,0 +1,51 @@
+# SLOWN — 맞춤 예복 랜딩 페이지 (데모)
+
+맞춤 예복 브랜드를 위한 랜딩 페이지 데모입니다. 후기·수치·인물·가격은 모두 샘플 콘텐츠입니다.
+
+- 스택: Next.js 16(App Router) · React 19 · Tailwind CSS v4 · motion · Lenis · lucide-react
+- 페이지: `/`(홈), `/pricing`(가격)
+
+이 폴더(`landing/`)에서 실행합니다. 개발 서버는 http://localhost:3000 입니다.
+
+```bash
+npm install
+npm run dev
+```
+
+## 디자인 장치
+
+| 장치 | 위치 | 설명 |
+| --- | --- | --- |
+| 한 올의 실 | `src/components/layout/PageCanvas.tsx`, `Thread.tsx` | 히어로에서 마지막 CTA까지 이어지는 1px 실. 페이지 여백을 따라 내려가다 섹션 색이 바뀌는 경계에서만 S자로 건너가고, 스크롤에 맞춰 안개처럼 스며 나타나며, 콘텐츠보다 조금 느린 면 위에 있습니다. 섹션의 `data-thread-side`로 지나갈 여백을 정합니다. |
+| 물감 번짐 | 같은 파일 | 섹션은 배경 대신 `data-paint="cream\|latte\|coffee\|espresso\|amber"`만 선언하고, 이웃 색이 카라멜 톤을 거쳐 섞입니다. 경계 폭은 `data-paint-seam`(px)으로 줄일 수 있습니다. |
+| 색 | `src/app/globals.css` | 커피브라운 `#71502F`, 엠버 `#F3A257`이 주색이고 나머지는 두 색에서 파생했습니다. |
+| 공정 4단계 | `src/components/home/Process.tsx` | 데스크톱은 스크롤 고정 + 좌우 화살표, 모바일은 화살표·스와이프로 넘깁니다. |
+| 견적함 | `src/components/pricing/QuoteDock.tsx` | 가격표 항목을 누르면 담기고 합계가 떠 있는 바에 표시됩니다. |
+
+## 값 바꾸기
+
+모든 문구·가격·연락처는 `src/content/`에 있습니다.
+
+| 파일 | 내용 |
+| --- | --- |
+| `site.ts` | 브랜드명, 연락처, 메뉴, 버튼 문구, 가격 약속·근거 |
+| `home.ts` | 홈 섹션별 문구, 통계, 후기, 갤러리 비율, 공정 단계, 디렉터 |
+| `pricing.ts` | 가격 탭·그룹·항목(정가/판매가, 배지, 설명), 견적함 문구 |
+
+사진·영상은 플레이스홀더입니다. 실제 영상은 `public/videos/hero.mp4`에 두고 `home.ts`의 `HERO.videoSrc`를 `"/videos/hero.mp4"`로 바꾸면 됩니다. 예약 링크는 `site.ts`의 `bookingUrl`(현재 `#booking`)을 바꾸면 모든 버튼에 반영됩니다.
+
+## 배포 (GitHub Pages)
+
+`main`에 푸시하면 저장소 루트의 `.github/workflows/deploy.yml`이 이 앱을 정적 사이트(`out/`)로 빌드해 GitHub Pages 사이트의 루트(`/<repo>/`)에 올립니다. 브랜드관 목업(`../brand-shop`)은 같은 사이트의 `/<repo>/shop/`에 함께 올라갑니다. 저장소 이름이 경로가 되므로 워크플로가 `PAGES_BASE_PATH`를 넘겨 줍니다. 저장소의 **Settings → Pages → Source**는 `GitHub Actions`로 두면 됩니다.
+
+로컬에서 같은 결과를 확인하려면 이 폴더에서 실행합니다.
+
+```bash
+PAGES_BASE_PATH=/slown-tailor-web npm run build
+```
+
+Windows의 Git Bash는 `/`로 시작하는 환경 변수 값을 Windows 경로(`C:/Program Files/Git/slown-tailor-web` 같은 값)로 바꿔 넘겨서 빌드가 `basePath has to start with a /` 오류로 멈춥니다. Git Bash에서는 이 변수만 변환하지 않도록 `MSYS2_ENV_CONV_EXCL`을 함께 붙입니다.
+
+```bash
+MSYS2_ENV_CONV_EXCL=PAGES_BASE_PATH PAGES_BASE_PATH=/slown-tailor-web npm run build
+```

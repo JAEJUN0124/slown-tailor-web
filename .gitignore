@@ -1,27 +1,7 @@
-# dependencies
-/node_modules
+# Each app (landing/, brand-shop/) keeps its own .gitignore.
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-npm-debug.log*
-
-# env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# local only: research notes, the pre-redesign copy and editor/agent tooling
-/docs/
-/_backup/
+# local only: editor/agent tooling
 /.claude/
 /.mcp.json
+
+.DS_Store
