@@ -1,48 +1,9 @@
 // Values for the brand-shop mockup: SLOWN as a brand shop inside a mall, laid
 // out like the reference mall's brand main page. The mall, its sister shops,
 // the company details and every product, price and count are placeholders.
-
-export type ArtKind =
-  | "suit"
-  | "jacket"
-  | "coat"
-  | "shirt"
-  | "knit"
-  | "trousers"
-  | "skirt"
-  | "dress"
-  | "tie"
-  | "bowtie"
-  | "square"
-  | "cufflinks"
-  | "shoes"
-  | "pump"
-  | "bag"
-  | "case"
-  | "belt"
-  | "wallet";
-
-/** Drawing variants; each kind reads only the ones that apply to it. */
-export type ArtVariant = "tux" | "db" | "wide" | "bow" | "vest" | "cardigan" | "belted" | "loafer";
-
-export type Art = {
-  kind: ArtKind;
-  /** Main colour of the item. */
-  color: string;
-  variant?: ArtVariant;
-  /** Studio backdrop: 0 neutral, 1 warm, 2 cool, 3 ivory. */
-  tone?: number;
-};
-
-export type Product = Art & {
-  id: string;
-  name: string;
-  price: number;
-  rating?: number;
-  reviews?: number;
-  likes: number;
-  tag?: "재입고" | "단독";
-};
+import { LISTS, models } from "./catalog";
+import { PROMOTIONS } from "./promotions";
+import type { Art } from "./types";
 
 export const MALL = {
   name: "FOLIO",
@@ -53,66 +14,62 @@ export const MALL = {
     { label: "LUMEN", style: "wide" },
     { label: "PARALLEL*", style: "bold" },
   ],
-  cartCount: 0,
   myPage: "마이페이지",
   login: "로그인",
   demoNotice: "데모 화면 · 샘플 콘텐츠",
+  // Mall-wide menu of the mall header. Only SLOWN exists in this mockup, so
+  // the shelves it carries point at its lists and the rest are placeholders.
+  categories: [
+    { label: "여성", href: "/list/women/" },
+    { label: "남성", href: "/list/men/" },
+    { label: "키즈", href: "#mall-kids" },
+    { label: "럭셔리", href: "#mall-luxury" },
+    { label: "백＆슈즈", href: "/list/shoes-acc/" },
+    { label: "스포츠", href: "#mall-sports" },
+    { label: "골프", href: "#mall-golf" },
+    { label: "뷰티", href: "#mall-beauty" },
+    { label: "라이프", href: "#mall-life" },
+    { label: "아울렛", href: "/list/outlet/" },
+  ],
+  specials: [
+    { label: "랭킹", href: "/ranking/" },
+    { label: "브랜드", href: "/" },
+    { label: "매거진", href: "#mall-magazine" },
+    { label: "기획전", href: "/promotions/" },
+    { label: "이벤트", href: "#mall-events" },
+  ],
 } as const;
 
 type MenuLink = { label: string; href: string };
 
-const slug = (s: string) => `#category-${encodeURIComponent(s)}`;
-const links = (labels: string[]): MenuLink[] => labels.map((label) => ({ label, href: slug(label) }));
+const listMenu = (key: "men" | "women" | "shoes-acc" | "outlet"): MenuLink[] => [
+  ...(key === "men" || key === "women" ? [{ label: "신상품", href: `/list/new/${key}/` }] : []),
+  { label: "전체 상품", href: `/list/${key}/` },
+  ...LISTS[key].subs.map((s) => ({ label: s.label, href: `/list/${key}/${s.slug}/` })),
+];
 
 export const BRAND = {
   name: "SLOWN",
   likes: "9999+",
   searchPlaceholder: "SLOWN 안에서 검색",
   // Hovering one opens its dropdown; a column holds ten links.
-  categories: [
-    {
-      label: "남성",
-      href: slug("남성"),
-      items: links(["신상품", "전체 상품", "수트", "재킷/블레이저", "셔츠", "니트", "팬츠", "코트", "타이/포켓치프", "커프링크스"]),
-    },
-    {
-      label: "여성",
-      href: slug("여성"),
-      items: links(["신상품", "전체 상품", "수트", "재킷", "블라우스", "니트", "스커트", "팬츠", "코트", "원피스", "액세서리"]),
-    },
-    {
-      label: "슈즈＆잡화",
-      href: slug("슈즈잡화"),
-      items: links(["전체 상품", "남성 슈즈", "여성 슈즈", "가방", "벨트", "지갑/카드케이스"]),
-    },
-    {
-      label: "아울렛",
-      href: slug("아울렛"),
-      items: links(["전체 상품", "남성", "여성", "슈즈＆잡화"]),
-    },
-  ],
-  newIn: { label: "신상품", href: slug("신상품") },
+  categories: (["men", "women", "shoes-acc", "outlet"] as const).map((key) => ({
+    label: LISTS[key].label,
+    href: `/list/${key}/`,
+    items: listMenu(key),
+  })),
+  newIn: { label: "신상품", href: "/list/new/" },
   promotions: {
     label: "기획전",
-    href: "#promotions",
+    href: "/promotions/",
     more: "기획전 더보기",
-    items: [
-      "[SLOWN] 26 F/W TAILORING",
-      "[SLOWN] WEDDING EDIT",
-      "[SLOWN] ONLINE EXCLUSIVE",
-      "[SLOWN] SHIRTS NEW IN",
-      "[SLOWN] LEATHER GOODS",
-      "[SLOWN] 26 S/S SEASON OFF",
-      "[SLOWN] CEREMONY SHOES",
-      "[SLOWN] OUTLET NEW IN",
-      "[SLOWN] KNIT COLLECTION",
-      "[SLOWN] 26 S/S COLLECTION",
-    ].map((label, i) => ({ label, href: `#promotion-${i + 1}` })),
+    items: PROMOTIONS.map((p) => ({ label: `[SLOWN] ${p.title}`, href: `/promotions/${p.id}/` })),
   },
 } as const;
 
 // ── Key visual ─────────────────────────────────────────────────────────
 export type KeyVisual = {
+  /** Promotion id the slide opens. */
   id: string;
   title: string;
   desc: string;
@@ -191,66 +148,23 @@ export const KEY_VISUALS: KeyVisual[] = [
 
 // ── Category banners under the key visual ──────────────────────────────
 export const PICKS = [
-  { title: "New Arrivals", desc: "신상품을 가장 먼저 만나보세요.", href: "#category-new", kind: "coat", color: "#a8835a", tone: 1 },
-  { title: "Signature Suits", desc: "변함없이 사랑받는\n시그니처 수트를 소개합니다.", href: "#category-suits", kind: "suit", color: "#3a3b3e", tone: 0 },
-  { title: "Shoes Collection", desc: "발끝까지 완벽한 스타일을 완성하세요.", href: "#category-shoes", kind: "shoes", color: "#151515", tone: 2 },
-  { title: "Outlet", desc: "최대 60% 혜택으로 만나보세요.", href: "#category-outlet", kind: "knit", color: "#5b4130", variant: "vest", tone: 3 },
+  { title: "New Arrivals", desc: "신상품을 가장 먼저 만나보세요.", href: "/list/new/", kind: "coat", color: "#a8835a", tone: 1 },
+  { title: "Signature Suits", desc: "변함없이 사랑받는\n시그니처 수트를 소개합니다.", href: "/list/men/suits/", kind: "suit", color: "#3a3b3e", tone: 0 },
+  { title: "Shoes Collection", desc: "발끝까지 완벽한 스타일을 완성하세요.", href: "/list/shoes-acc/mens-shoes/", kind: "shoes", color: "#151515", tone: 2 },
+  { title: "Outlet", desc: "최대 60% 혜택으로 만나보세요.", href: "/list/outlet/", kind: "knit", color: "#5b4130", variant: "vest", tone: 3 },
 ] satisfies (Art & { title: string; desc: string; href: string })[];
-
-// ── Product catalog ────────────────────────────────────────────────────
-const CATALOG = {
-  sbSuit: { name: "(MEN) Single Breasted Wool Suit - Charcoal", price: 1290000, rating: 4.5, reviews: 56, likes: 628, kind: "suit", color: "#3a3b3e" },
-  dbSuit: { name: "(MEN) Double Breasted Suit - Navy", price: 1390000, rating: 5.0, reviews: 12, likes: 341, kind: "suit", variant: "db", color: "#232b3b", tone: 2 },
-  tuxedo: { name: "(MEN) Peak Lapel Tuxedo - Black", price: 1590000, rating: 4.5, reviews: 31, likes: 512, kind: "suit", variant: "tux", color: "#161616", tag: "단독" },
-  blazer: { name: "(MEN) Soft Shoulder Blazer - Camel", price: 790000, rating: 4.5, reviews: 8, likes: 160, kind: "jacket", color: "#a57f55", tone: 1 },
-  linenJacket: { name: "(MEN) Linen Blend Jacket - Ecru", price: 690000, likes: 46, kind: "jacket", color: "#d9cfbd", tone: 2 },
-  camelCoat: { name: "(MEN) Wool Cashmere Coat - Camel", price: 1190000, rating: 4.0, reviews: 9, likes: 325, kind: "coat", color: "#b08a5e", tone: 1 },
-  balmacaan: { name: "(MEN) Balmacaan Coat - Charcoal", price: 1090000, likes: 29, kind: "coat", color: "#444446" },
-  poplinShirt: { name: "(MEN) Poplin Dress Shirt - White", price: 159000, rating: 4.5, reviews: 134, likes: 444, kind: "shirt", color: "#f4f2ee", tone: 2 },
-  oxfordShirt: { name: "(MEN) Oxford Shirt - Pale Blue", price: 149000, rating: 5.0, reviews: 4, likes: 87, kind: "shirt", color: "#c8d4e3" },
-  wingShirt: { name: "(MEN) Wing Collar Shirt - Ivory", price: 189000, likes: 23, kind: "shirt", color: "#ece6d8", tone: 2 },
-  woolTrousers: { name: "(MEN) Pleated Wool Trousers - Gray", price: 329000, rating: 4.5, reviews: 14, likes: 151, kind: "trousers", color: "#7a7a7c", tone: 1 },
-  merino: { name: "(MEN) Merino Crewneck - Oatmeal", price: 259000, likes: 34, kind: "knit", color: "#cbbfa9", tone: 2 },
-  cableVest: { name: "(MEN) Cable Knit Vest - Brown", price: 229000, rating: 5.0, reviews: 2, likes: 18, kind: "knit", variant: "vest", color: "#5b4130", tone: 3 },
-  tie: { name: "(UNISEX) Silk Grenadine Tie - Navy", price: 129000, rating: 4.5, reviews: 26, likes: 267, kind: "tie", color: "#1f2a44" },
-  bowtie: { name: "(UNISEX) Silk Bow Tie - Black", price: 99000, rating: 5.0, reviews: 7, likes: 137, kind: "bowtie", color: "#161616", tone: 1 },
-  square: { name: "(UNISEX) Hand Rolled Pocket Square - White", price: 59000, likes: 57, kind: "square", color: "#f4f2ec", tone: 2 },
-  cufflinks: { name: "(UNISEX) Mother of Pearl Cufflinks - Silver", price: 189000, rating: 4.0, reviews: 9, likes: 133, kind: "cufflinks", color: "#e9e4da", tone: 0, tag: "재입고" },
-  oxfords: { name: "(MEN) Plain Toe Oxford - Black", price: 590000, rating: 4.5, reviews: 48, likes: 681, kind: "shoes", color: "#151515", tone: 2 },
-  loafers: { name: "(MEN) Suede Penny Loafer - Chocolate", price: 520000, rating: 4.5, reviews: 15, likes: 255, kind: "shoes", variant: "loafer", color: "#4a3426", tone: 1 },
-  pump: { name: "(WOMEN) Pointed Pump 70 - Black", price: 490000, rating: 5.0, reviews: 7, likes: 214, kind: "pump", color: "#151515", tone: 3 },
-  halfMoon: { name: "(UNISEX) Half Moon Bag - Tan", price: 890000, rating: 4.5, reviews: 93, likes: 972, kind: "bag", color: "#a0703f", tone: 0 },
-  miniMoon: { name: "(WOMEN) Mini Half Moon Bag - Black", price: 690000, rating: 4.5, reviews: 42, likes: 483, kind: "bag", color: "#161616", tone: 1, tag: "단독" },
-  docCase: { name: "(UNISEX) Document Case - Black", price: 690000, likes: 60, kind: "case", color: "#1b1b1b", tone: 2 },
-  belt: { name: "(UNISEX) Leather Belt 30 - Dark Brown", price: 189000, rating: 4.5, reviews: 5, likes: 295, kind: "belt", color: "#3e2a1e", tone: 1 },
-  cardHolder: { name: "(UNISEX) Card Holder - Black", price: 159000, rating: 5.0, reviews: 1, likes: 133, kind: "wallet", color: "#1b1b1b", tone: 0 },
-  wBlazer: { name: "(WOMEN) Tailored Wool Blazer - Black", price: 790000, rating: 4.5, reviews: 21, likes: 394, kind: "jacket", color: "#1a1a1a", tone: 1, tag: "재입고" },
-  wideTrousers: { name: "(WOMEN) Wide Leg Trousers - Ivory", price: 359000, rating: 4.0, reviews: 6, likes: 108, kind: "trousers", variant: "wide", color: "#e7e1d3", tone: 2 },
-  blouse: { name: "(WOMEN) Silk Bow Blouse - Champagne", price: 329000, likes: 49, kind: "shirt", variant: "bow", color: "#e8d9bf", tone: 2 },
-  wrapCoat: { name: "(WOMEN) Wrap Coat - Oatmeal", price: 1190000, rating: 4.5, reviews: 15, likes: 450, kind: "coat", variant: "belted", color: "#cdbfa6", tone: 2 },
-  skirt: { name: "(WOMEN) Pleated Midi Skirt - Navy", price: 389000, likes: 16, kind: "skirt", color: "#263048", tone: 1 },
-  cardigan: { name: "(WOMEN) Fine Knit Cardigan - Mocha", price: 289000, rating: 5.0, reviews: 3, likes: 14, kind: "knit", variant: "cardigan", color: "#7d6450", tone: 3 },
-  slipDress: { name: "(WOMEN) Satin Slip Dress - Ivory", price: 459000, likes: 3, kind: "dress", color: "#ece3d1", tone: 2 },
-} satisfies Record<string, Omit<Product, "id">>;
-
-type Key = keyof typeof CATALOG;
-
-const pick = (keys: Key[]): Product[] =>
-  keys.map((key) => ({ id: key, ...CATALOG[key] }) as Product);
-
-export const ALL_PRODUCTS: Product[] = pick(Object.keys(CATALOG) as Key[]);
 
 // ── Corners (sections) ─────────────────────────────────────────────────
 export const CORNERS = [
   {
     id: "finishing-touches",
     title: "Finishing Touches",
-    products: pick(["tie", "cufflinks", "square", "bowtie", "belt", "cardHolder", "halfMoon", "docCase"]),
+    products: models(["tie", "cufflinks", "square", "bowtie", "belt", "cardHolder", "halfMoon", "docCase"]),
   },
   {
     id: "signature-suits",
     title: "Explore Signature Suits",
-    products: pick(["sbSuit", "dbSuit", "tuxedo", "blazer", "linenJacket", "wBlazer", "woolTrousers", "wideTrousers"]),
+    products: models(["sbSuit", "dbSuit", "tuxedo", "blazer", "linenJacket", "wBlazer", "woolTrousers", "wideTrousers"]),
   },
 ];
 
@@ -258,20 +172,20 @@ export const CORNERS = [
 export const NEW_IN = {
   title: "New In",
   tabs: [
-    { label: "남성", products: pick(["camelCoat", "balmacaan", "oxfordShirt", "merino", "cableVest", "wingShirt", "loafers", "oxfords", "poplinShirt", "dbSuit"]) },
-    { label: "여성", products: pick(["wrapCoat", "wBlazer", "blouse", "skirt", "cardigan", "slipDress", "wideTrousers", "pump", "miniMoon", "cardHolder"]) },
-    { label: "슈즈＆잡화", products: pick(["oxfords", "loafers", "pump", "halfMoon", "miniMoon", "docCase", "belt", "cardHolder", "tie", "cufflinks"]) },
+    { label: "남성", products: models(["camelCoat", "balmacaan", "oxfordShirt", "merino", "cableVest", "wingShirt", "loafers", "oxfords", "poplinShirt", "dbSuit"]) },
+    { label: "여성", products: models(["wrapCoat", "wBlazer", "blouse", "skirt", "cardigan", "slipDress", "wideTrousers", "pump", "miniMoon", "wSuit"]) },
+    { label: "슈즈＆잡화", products: models(["oxfords", "loafers", "pump", "halfMoon", "miniMoon", "docCase", "belt", "cardHolder", "tie", "cufflinks"]) },
   ],
 };
 
 export const BESTSELLERS = {
   title: "Bestsellers",
   more: "랭킹 바로가기",
-  moreHref: "#ranking",
+  moreHref: "/ranking/",
   tabs: [
-    { label: "남성", products: pick(["sbSuit", "poplinShirt", "tie", "dbSuit", "oxfords", "woolTrousers", "blazer", "cufflinks"]) },
-    { label: "여성", products: pick(["wBlazer", "wideTrousers", "blouse", "pump", "wrapCoat", "slipDress", "skirt", "miniMoon"]) },
-    { label: "슈즈＆잡화", products: pick(["halfMoon", "oxfords", "cardHolder", "loafers", "belt", "pump", "docCase", "miniMoon"]) },
+    { label: "남성", products: models(["sbSuit", "poplinShirt", "tie", "dbSuit", "oxfords", "woolTrousers", "blazer", "cufflinks"]) },
+    { label: "여성", products: models(["wBlazer", "wideTrousers", "blouse", "pump", "wrapCoat", "slipDress", "skirt", "miniMoon"]) },
+    { label: "슈즈＆잡화", products: models(["halfMoon", "oxfords", "cardHolder", "loafers", "belt", "pump", "docCase", "miniMoon"]) },
   ],
 };
 
@@ -280,21 +194,21 @@ export const SHOP_FOOTER = {
   navGroups: [
     [
       { label: "회사소개", href: "#company" },
-      { label: "이용약관", href: "#terms" },
-      { label: "개인정보처리방침", href: "#privacy", strong: true },
-      { label: "이메일무단수집거부", href: "#no-email" },
+      { label: "이용약관", href: "/policy/terms/" },
+      { label: "개인정보처리방침", href: "/policy/privacy/", strong: true },
+      { label: "이메일무단수집거부", href: "#no-email", dialog: true },
     ],
     [
-      { label: "멤버십안내", href: "#membership" },
-      { label: "고객센터", href: "#help" },
-      { label: "매장찾기", href: "#stores" },
-      { label: "공지사항", href: "#notice" },
-      { label: "단체주문", href: "#bulk" },
+      { label: "멤버십안내", href: "/membership/" },
+      { label: "고객센터", href: "/help/" },
+      { label: "매장찾기", href: "/stores/" },
+      { label: "공지사항", href: "/help/notice/" },
+      { label: "단체주문", href: "/help/bulk-order/" },
     ],
   ],
   quick: [
-    { label: "입점신청", href: "#vendor" },
-    { label: "제휴문의", href: "#partnership" },
+    { label: "입점신청", href: "/help/vendor/" },
+    { label: "제휴문의", href: "/help/partnership/" },
   ],
   company: "(주)폴리오커머스",
   info: [
@@ -313,6 +227,11 @@ export const SHOP_FOOTER = {
     { label: "YouTube", href: "#youtube" },
     { label: "Instagram", href: "#instagram" },
   ],
+  noEmail: {
+    title: "이메일 무단수집 거부",
+    body: "본 사이트에 게시된 이메일 주소가 전자우편 수집 프로그램이나 그 밖의 기술적 장치를 이용하여 무단으로 수집되는 것을 거부하며, 이를 위반하면 관련 법에 따라 처벌될 수 있습니다.",
+    date: "게시일 : 2026. 1. 1",
+  },
 } as const;
 
 export const WIDGET = {
@@ -320,6 +239,26 @@ export const WIDGET = {
   empty: "최근 본 상품이 없습니다.",
   clear: "전체삭제",
   talk: "상담하기",
-  talkHref: "#talk",
+  talkHref: "/help/",
   top: "최상단으로 이동",
 } as const;
+
+// ── Promotion and ranking pages ───────────────────────────────────────
+export const PROMOTION_PAGE = {
+  brandLink: "브랜드관에서 더 많은 상품을 만나 보세요",
+  welcome: { title: "신규 회원 웰컴 혜택", text: "15% 쿠폰 + 무료배송 쿠폰", href: "/membership/" },
+};
+
+export const RANKING = {
+  kinds: [
+    { value: "sale", label: "실시간 판매랭킹" },
+    { value: "click", label: "실시간 클릭랭킹" },
+  ],
+  updated: "12분 전 업데이트",
+  tip: {
+    title: "랭킹 기준",
+    lines: ["최근 24시간 동안의 판매(클릭) 수로 정합니다.", "한 시간마다 새로 집계합니다.", "품절된 상품은 순위에서 뺍니다."],
+  },
+  /** Shelf tabs in the reference's order. */
+  shelves: ["women", "men", "shoes-acc"] as const,
+};

@@ -1,7 +1,10 @@
-import { ShieldCheck } from "lucide-react";
-import type { ReactNode } from "react";
+"use client";
+
+import { ShieldCheck, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SHOP_FOOTER } from "@/content/shop";
 import { cn } from "@/lib/utils";
+import { SmartLink } from "./ShopHeader";
 
 // lucide v1 dropped brand marks, so the two SNS glyphs are drawn here.
 function SnsIcon({ label }: { label: string }) {
@@ -26,17 +29,66 @@ function SnsIcon({ label }: { label: string }) {
 const divider =
   "relative before:absolute before:left-0 before:top-1/2 before:h-3.5 before:w-px before:-translate-y-1/2 before:bg-shop-250 before:content-['']";
 
-function FooterLink({ href, children, className }: { href: string; children: ReactNode; className?: string }) {
+const linkClass = "px-2 text-[15px] leading-[21px] text-shop-600 transition-colors hover:text-shop-900";
+
+/** The reference opens this notice in a bare popup window; here it is a dialog. */
+function NoEmailDialog({ onClose }: { onClose: () => void }) {
+  const closeBtn = useRef<HTMLButtonElement>(null);
+  const { title, body, date } = SHOP_FOOTER.noEmail;
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    closeBtn.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      opener?.focus();
+    };
+  }, [onClose]);
+
   return (
-    <a href={href} className={cn("px-2 text-[15px] leading-[21px] text-shop-600 transition-colors hover:text-shop-900", className)}>
-      {children}
-    </a>
+    <div className="fixed inset-0 z-[960] flex items-center justify-center bg-black/20 p-5" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="no-email-title"
+        className="relative w-full max-w-[480px] bg-white p-8 text-shop-900 shadow-[0_8px_32px_rgb(0_0_0/0.18)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="no-email-title" className="mb-4 text-[20px] font-bold leading-[26px]">
+          {title}
+        </h2>
+        <p className="text-[15px] leading-[24px]">{body}</p>
+        <p className="mt-4 text-[13px] leading-[19px] text-shop-600">{date}</p>
+        <button ref={closeBtn} type="button" aria-label="닫기" onClick={onClose} className="absolute right-4 top-4 flex size-8 items-center justify-center">
+          <X className="size-5" strokeWidth={1.5} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FooterLink({ link, className, onDialog }: { link: { label: string; href: string; strong?: boolean; dialog?: boolean }; className?: string; onDialog: () => void }) {
+  if (link.dialog)
+    return (
+      <button type="button" onClick={onDialog} className={cn(linkClass, className)}>
+        {link.label}
+      </button>
+    );
+  return (
+    <SmartLink href={link.href} className={cn(linkClass, link.strong && "font-bold text-shop-900", className)}>
+      {link.label}
+    </SmartLink>
   );
 }
 
 /** Gray footer: link rows, company block, certification + SNS (reference: `footer`). */
 export function ShopFooter() {
   const f = SHOP_FOOTER;
+  const [dialog, setDialog] = useState(false);
+  const open = () => setDialog(true);
+  const close = useCallback(() => setDialog(false), []);
+
   return (
     <footer className="bg-shop-150">
       <div className="border-b border-shop-250">
@@ -46,9 +98,7 @@ export function ShopFooter() {
               <ul key={g} className={cn("flex flex-wrap items-center", g > 0 && cn(divider, "md:ml-4 md:pl-6"))}>
                 {group.map((link, i) => (
                   <li key={link.label}>
-                    <FooterLink href={link.href} className={cn(i === 0 && g === 0 && "pl-0", "strong" in link && link.strong && "font-bold text-shop-900")}>
-                      {link.label}
-                    </FooterLink>
+                    <FooterLink link={link} onDialog={open} className={cn(i === 0 && g === 0 && "pl-0")} />
                   </li>
                 ))}
               </ul>
@@ -57,9 +107,7 @@ export function ShopFooter() {
           <ul className="flex items-center">
             {f.quick.map((link, i) => (
               <li key={link.label}>
-                <FooterLink href={link.href} className={cn(i === f.quick.length - 1 && "pr-0", i === 0 && "max-lg:pl-0")}>
-                  {link.label}
-                </FooterLink>
+                <FooterLink link={link} onDialog={open} className={cn(i === f.quick.length - 1 && "pr-0", i === 0 && "max-lg:pl-0")} />
               </li>
             ))}
           </ul>
@@ -101,6 +149,7 @@ export function ShopFooter() {
           </div>
         </div>
       </div>
+      {dialog && <NoEmailDialog onClose={close} />}
     </footer>
   );
 }

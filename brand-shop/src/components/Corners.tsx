@@ -1,17 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { BESTSELLERS, CORNERS, NEW_IN, PICKS } from "@/content/shop";
 import { cn } from "@/lib/utils";
 import { CornerTabs, useRandomTab, useTabIds } from "./CornerTabs";
 import { ProductArt } from "./ProductArt";
-import { ProductCard } from "./ProductCard";
+import { GRID, ProductCard } from "./ProductCard";
 
 // Sections of the reference's `.corner-section`, top to bottom.
 
-const GRID_4 = "grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4";
-const GRID_5 = "grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-5";
+const GRID_4 = GRID[4];
+const GRID_5 = GRID[5];
 
 function SectionTitle({ children, id }: { children: ReactNode; id?: string }) {
   return (
@@ -31,7 +32,7 @@ export function Picks() {
       <ul className="-mx-2 flex flex-wrap">
         {PICKS.map((pick, i) => (
           <li key={pick.title} className={cn("w-1/2 px-2 md:w-1/4", i < 2 && "mb-10 md:mb-0")}>
-            <a href={pick.href} className="block">
+            <Link href={pick.href} className="block">
               <div className="relative overflow-hidden pt-[133.432%]">
                 <ProductArt art={pick} className="absolute inset-0" />
               </div>
@@ -39,7 +40,7 @@ export function Picks() {
                 <p className="max-h-[42px] overflow-hidden font-bold">{pick.title}</p>
                 <p className="max-h-[42px] overflow-hidden whitespace-pre-line">{pick.desc}</p>
               </div>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -118,13 +119,13 @@ export function Bestsellers() {
           ))}
         </ul>
       </section>
-      <a
+      <Link
         href={BESTSELLERS.moreHref}
         className="mx-auto mt-10 flex h-11 w-[220px] items-center justify-center rounded-md border border-shop-250 pl-3.5 text-[14px] leading-[20px] text-shop-900 transition-colors hover:border-shop-900"
       >
         {BESTSELLERS.more}
         <ChevronRight className="ml-0.5 size-3" strokeWidth={1.6} aria-hidden="true" />
-      </a>
+      </Link>
     </>
   );
 }

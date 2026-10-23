@@ -5,7 +5,7 @@
 | 폴더 | 내용 | 개발 서버 | 배포 경로 |
 | --- | --- | --- | --- |
 | [`landing/`](landing/) | SLOWN 맞춤 예복 랜딩 페이지(홈·가격) | http://localhost:3000 | `/<repo>/` |
-| [`brand-shop/`](brand-shop/) | 쇼핑몰에 입점한 SLOWN 브랜드관 메인 화면 목업 | http://localhost:3001 | `/<repo>/shop/` |
+| [`brand-shop/`](brand-shop/) | 쇼핑몰에 입점한 SLOWN 브랜드관과 이어지는 몰 화면(목록·상품 상세·기획전·랭킹·검색·장바구니·고객센터 등) 목업 | http://localhost:3001 | `/<repo>/shop/` |
 
 자세한 구성과 값 바꾸는 방법은 각 폴더의 README에 있습니다.
 

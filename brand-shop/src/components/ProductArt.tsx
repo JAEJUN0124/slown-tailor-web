@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import type { Art, ArtKind, ArtVariant } from "@/content/shop";
+import type { Art, ArtKind, ArtVariant } from "@/content/types";
 import { cn } from "@/lib/utils";
 
 // Flat studio "photography" for the mall mockup: one drawing per item kind

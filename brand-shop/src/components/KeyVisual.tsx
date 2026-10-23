@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { KEY_VISUALS, type KeyVisual as Slide } from "@/content/shop";
@@ -149,8 +150,8 @@ export function KeyVisual() {
               inert={!shown}
               className="relative w-full shrink-0"
             >
-              <a
-                href={`#promotion-${slide.id}`}
+              <Link
+                href={`/promotions/${slide.id}/`}
                 draggable={false}
                 className="relative block aspect-[4/5] md:aspect-[1920/853]"
               >
@@ -163,7 +164,7 @@ export function KeyVisual() {
                     {slide.desc}
                   </span>
                 </span>
-              </a>
+              </Link>
             </div>
           );
         })}

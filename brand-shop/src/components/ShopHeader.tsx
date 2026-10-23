@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronRight, Heart, Search, ShoppingBag, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { BRAND, MALL } from "@/content/shop";
+import { useCart } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const SISTER_STYLE = {
@@ -12,9 +14,19 @@ const SISTER_STYLE = {
   bold: "font-extrabold tracking-[0.02em]",
 } as const;
 
+/** Internal routes go through next/link (base path aware); placeholders stay plain anchors. */
+export function SmartLink({ href, ...rest }: React.ComponentProps<"a"> & { href: string }) {
+  return href.startsWith("/") ? <Link href={href} {...rest} /> : <a href={href} {...rest} />;
+}
+
+export function searchHref(q: string, scope: "brand" | "all" = "brand") {
+  return `/search/?q=${encodeURIComponent(q.trim())}${scope === "all" ? "&scope=all" : ""}`;
+}
+
 /** Dimmed full-width search layer opened from the top bar (reference: `.search-box`). */
-function TotalSearch({ onClose }: { onClose: () => void }) {
+export function TotalSearch({ onClose }: { onClose: () => void }) {
   const input = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   useEffect(() => {
     input.current?.focus();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -22,12 +34,20 @@ function TotalSearch({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const q = input.current?.value ?? "";
+    if (!q.trim()) return input.current?.focus();
+    onClose();
+    router.push(searchHref(q, "all"));
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-[100] bg-black/20" onClick={onClose} aria-hidden="true" />
       <div role="dialog" aria-modal="true" aria-label="통합 검색" className="absolute inset-x-0 top-0 z-[101] bg-white">
         <div className="relative mx-auto max-w-[1440px] px-5 pb-[100px] pt-[60px]">
-          <form role="search" onSubmit={(e) => e.preventDefault()} className="mx-auto flex max-w-[692px] items-center border-b-2 border-black">
+          <form role="search" onSubmit={submit} className="mx-auto flex max-w-[692px] items-center border-b-2 border-black">
             <input
               ref={input}
               type="search"
@@ -45,6 +65,19 @@ function TotalSearch({ onClose }: { onClose: () => void }) {
         </div>
       </div>
     </>
+  );
+}
+
+/** Cart icon with the purple-style count pill (reference: `.count`). */
+export function CartLink({ className, iconClass }: { className?: string; iconClass: string }) {
+  const count = useCart().length;
+  return (
+    <Link href="/cart/" aria-label={`장바구니, ${count}개`} className={cn("relative flex items-center justify-center", className)}>
+      <ShoppingBag className={iconClass} strokeWidth={1.5} />
+      <span className="absolute -right-3 bottom-0 flex h-[15px] min-w-[22px] justify-center rounded-full bg-shop-accent px-1 text-[9px] font-bold leading-[15px] tracking-[-1px] text-white" aria-hidden="true">
+        {count}
+      </span>
+    </Link>
   );
 }
 
@@ -70,24 +103,20 @@ function TopBar({ onSearch }: { onSearch: () => void }) {
             <button type="button" aria-label="통합 검색" onClick={onSearch} className="flex size-5 items-center justify-center">
               <Search className="size-5" strokeWidth={1.5} />
             </button>
-            <a href="#wishlist" aria-label="찜한 상품" className="flex size-5 items-center justify-center">
+            {/* Wish list and my page need a login on the reference, so they land on it. */}
+            <Link href="/login/" aria-label="찜한 상품" className="flex size-5 items-center justify-center">
               <Heart className="size-5" strokeWidth={1.5} />
-            </a>
-            <a href="#cart" aria-label={`장바구니, ${MALL.cartCount}개`} className="relative flex size-5 items-center justify-center">
-              <ShoppingBag className="size-5" strokeWidth={1.5} />
-              <span className="absolute -right-3 bottom-0 flex h-[15px] w-[22px] justify-center rounded-full bg-shop-accent text-[9px] font-bold leading-[15px] tracking-[-1px] text-white" aria-hidden="true">
-                {MALL.cartCount}
-              </span>
-            </a>
+            </Link>
+            <CartLink className="size-5" iconClass="size-5" />
           </div>
 
           <nav aria-label="내 계정" className="flex items-center gap-6">
-            <a href="#mypage" className="hidden transition-colors hover:text-white sm:block">
+            <Link href="/login/" className="hidden transition-colors hover:text-white sm:block">
               {MALL.myPage}
-            </a>
-            <a href="#login" className="transition-colors hover:text-white">
+            </Link>
+            <Link href="/login/" className="transition-colors hover:text-white">
               {MALL.login}
-            </a>
+            </Link>
           </nav>
         </div>
       </div>
@@ -104,17 +133,17 @@ function Dropdown({ id, menu, rows }: { id: string; menu: Menu; rows: number }) 
       <ul className="grid h-[404px] auto-cols-[200px] grid-flow-col content-start gap-y-3.5 pb-10 pt-6" style={{ gridTemplateRows: `repeat(${rows}, min-content)` }}>
         {menu.items?.map((item) => (
           <li key={item.label} className="px-5">
-            <a href={item.href} className="line-clamp-2 text-[15px] leading-[21px] text-shop-900 hover:underline">
+            <SmartLink href={item.href} className="line-clamp-2 text-[15px] leading-[21px] text-shop-900 hover:underline">
               {item.label}
-            </a>
+            </SmartLink>
           </li>
         ))}
       </ul>
       {menu.more && (
-        <a href={menu.href} className="absolute bottom-3.5 right-5 flex items-center text-[12px] leading-4 text-shop-500">
+        <SmartLink href={menu.href} className="absolute bottom-3.5 right-5 flex items-center text-[12px] leading-4 text-shop-500">
           {menu.more}
           <ChevronRight className="ml-0.5 size-3" strokeWidth={1.6} aria-hidden="true" />
-        </a>
+        </SmartLink>
       )}
     </div>
   );
@@ -125,6 +154,7 @@ function BrandSearch() {
   const [open, setOpen] = useState(false);
   const form = useRef<HTMLFormElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!open) return;
@@ -139,12 +169,21 @@ function BrandSearch() {
     };
   }, [open]);
 
+  // The reference sends this form to a broken URL; here it opens the brand search.
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const q = input.current?.value ?? "";
+    if (!q.trim()) return input.current?.focus();
+    setOpen(false);
+    router.push(searchHref(q));
+  };
+
   return (
     <div className="relative order-3 ml-auto h-11 w-7 md:order-4">
       <form
         ref={form}
         role="search"
-        onSubmit={(e) => e.preventDefault()}
+        onSubmit={submit}
         className={cn(
           "absolute right-0 top-0 flex h-11 items-center border transition-[width,padding,border-color,background-color] duration-500",
           open ? "z-20 w-[min(316px,calc(100vw-40px))] border-black bg-white pl-5" : "w-7 border-transparent",
@@ -184,6 +223,9 @@ function BrandSearch() {
 function BrandBar() {
   const [open, setOpen] = useState<number | null>(null);
   const [liked, setLiked] = useState(false);
+  const pathname = usePathname();
+  // As on the reference, promotion, ranking and search screens drop the brand like.
+  const showLike = !/^\/(promotions\/.+|ranking|search)/.test(pathname);
 
   useEffect(() => {
     if (open === null) return;
@@ -192,8 +234,12 @@ function BrandBar() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // Close menus when the route changes.
+  useEffect(() => setOpen(null), [pathname]);
+
   const menus: Menu[] = [...BRAND.categories, BRAND.promotions];
   const promoIndex = menus.length - 1;
+  const current = (href: string) => pathname.startsWith(href.replace(/\/$/, ""));
 
   const item = (menu: Menu, i: number, rows: number) => (
     <li
@@ -204,17 +250,18 @@ function BrandBar() {
       onFocus={() => setOpen(i)}
       onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setOpen(null)}
     >
-      <a
+      <SmartLink
         href={menu.href}
         aria-expanded={open === i}
         aria-controls={`brand-menu-${i}`}
+        aria-current={current(menu.href) ? "page" : undefined}
         className={cn(
           "flex h-11 items-center px-2 text-[15px] leading-[21px] transition-colors md:h-[50px]",
           open !== null && open !== i ? "text-shop-500" : "text-shop-900",
         )}
       >
         {menu.label}
-      </a>
+      </SmartLink>
       {open === i && (
         <div className="hidden lg:block">
           <Dropdown id={`brand-menu-${i}`} menu={menu} rows={rows} />
@@ -232,28 +279,33 @@ function BrandBar() {
           <span className="text-[26px] font-light leading-10 tracking-[0.18em] text-shop-900 md:text-[32px]">{BRAND.name}</span>
         </Link>
 
-        <button
-          type="button"
-          aria-pressed={liked}
-          aria-label={liked ? "브랜드 좋아요 취소" : "브랜드 좋아요"}
-          onClick={() => setLiked((v) => !v)}
-          className="order-2 ml-2 flex items-center gap-1 text-[13px] leading-[19px] text-shop-600"
-        >
-          <Heart className={cn("size-6", liked ? "fill-shop-like text-shop-like" : "text-shop-450")} strokeWidth={1.25} />
-          <span>{BRAND.likes}</span>
-        </button>
+        {showLike && (
+          <button
+            type="button"
+            aria-pressed={liked}
+            aria-label={liked ? "브랜드 좋아요 취소" : "브랜드 좋아요"}
+            onClick={() => setLiked((v) => !v)}
+            className="order-2 ml-2 flex items-center gap-1 text-[13px] leading-[19px] text-shop-600"
+          >
+            <Heart className={cn("size-6", liked ? "fill-shop-like text-shop-like" : "text-shop-450")} strokeWidth={1.25} />
+            <span>{BRAND.likes}</span>
+          </button>
+        )}
 
         <nav
           aria-label="브랜드 카테고리"
-          className="scrollbar-none order-4 -mx-5 w-[calc(100%+40px)] overflow-x-auto px-3 md:order-3 md:mx-0 md:ml-6 md:w-auto md:overflow-visible md:px-0"
+          className={cn(
+            "scrollbar-none order-4 -mx-5 w-[calc(100%+40px)] overflow-x-auto px-3 md:order-3 md:mx-0 md:w-auto md:overflow-visible md:px-0",
+            showLike ? "md:ml-6" : "md:ml-4",
+          )}
         >
           <div className="flex w-max items-center">
             <ul className="flex items-center">{BRAND.categories.map((menu, i) => item(menu, i, 10))}</ul>
             <ul className={divider}>
               <li className="shrink-0">
-                <a href={BRAND.newIn.href} className="flex h-11 items-center px-2 text-[15px] leading-[21px] text-shop-900 md:h-[50px]">
+                <Link href={BRAND.newIn.href} className="flex h-11 items-center px-2 text-[15px] leading-[21px] text-shop-900 md:h-[50px]">
                   {BRAND.newIn.label}
-                </a>
+                </Link>
               </li>
             </ul>
             <ul className={divider}>{item(BRAND.promotions, promoIndex, 6)}</ul>
