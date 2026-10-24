@@ -3,7 +3,7 @@
 SLOWN이 직접 운영하는 공식 온라인 스토어 목업입니다. 레퍼런스 브랜드 공식몰에서 로그인 없이 열리는 화면(홈·목록·상품 상세·검색·매거진·브랜드/서비스 안내·회원·장바구니·주문서·게시판)을 모두 분석해 화면 구조와 수치를 맞췄습니다. 회사 정보·상품·가격·리뷰·매장·입점처·약관·FAQ는 모두 샘플입니다.
 
 - 스택: Next.js 16(App Router, 정적 export) · React 19 · Tailwind CSS v4 · lucide-react
-- 배포: 아직 GitHub Pages 워크플로에 넣지 않았습니다. `npm run build` 결과는 `out/`에 나오고, 하위 경로에 올릴 때는 그 경로를 `PAGES_BASE_PATH`로 넘깁니다.
+- 배포 위치: `/<repo>/store/`
 
 이 폴더(`official-store/`)에서 실행합니다. 개발 서버는 http://localhost:3002 입니다.
 
@@ -72,3 +72,9 @@ npm run dev
 - 레퍼런스의 출시 예정 목록은 비어 있었습니다. 화면 틀을 보이려고 샘플 상품 몇 개를 넣었습니다.
 - 카페24 주소(`/product/list.html?cate_no=…`, `/product/detail.html?product_no=…`, `/article/review/4/…`)는 `/shop/…`, `/product/…`, `/board/review/…` 같은 정적 경로로 바꿨습니다.
 - 동작 줄이기 설정을 켜면 슬라이드 자동 재생, 등장 효과, 흐르는 썸네일을 멈추고 전환 효과를 바로 끝냅니다.
+
+## 배포
+
+`main`에 푸시하면 저장소 루트의 `.github/workflows/deploy.yml`이 이 앱을 `/<repo>/store` 경로로 정적 빌드해 같은 Pages 사이트의 `store/` 아래에 올립니다.
+
+Windows에서 빌드한 `out/`은 직접 올리지 않습니다. Next.js 16.4.2는 Windows에서 링크를 미리 받아 두는 파일(`__next.*.txt`)을 하위 폴더로 나눠 써서, 그대로 올리면 그 요청이 404로 실패합니다. 워크플로는 리눅스에서 빌드하므로 이 문제가 없습니다.
